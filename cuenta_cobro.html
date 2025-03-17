@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cuenta de Cobro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Bootstrap (opcional, para estilos del formulario) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  />
+  <style>
+    /* Estilos de la página (no afectan directamente el PDF) */
+    body {
+      background-color: #1a1a1a;
+      color: #e0e0e0;
+      font-family: "Arial", sans-serif;
+    }
+    .container {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(255, 0, 0, 0.3);
+      margin-top: 30px;
+      max-width: 800px;
+    }
+    h1 {
+      background: linear-gradient(90deg, #ff0000, #8b0000);
+      color: white;
+      padding: 12px;
+      border-radius: 5px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-control {
+      background: #333;
+      border: 1px solid #ff4444;
+      color: white;
+    }
+    .form-control:focus {
+      background: #444;
+      border-color: #ff2222;
+      color: white;
+    }
+    .section-title {
+      background: #3a3a3a;
+      padding: 8px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: #ff4444;
+      margin-top: 15px;
+    }
+    .btn-danger {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 10px;
+      background: linear-gradient(90deg, #ff2222, #a00000);
+      border: none;
+    }
+    .btn-danger:hover {
+      background: linear-gradient(90deg, #ff4444, #b00000);
+    }
+    .item-row {
+      margin-bottom: 10px;
+    }
+    /* Estilos de los botones extra (Volver / Informe Técnico) */
+    .btn-extra {
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+      border: none;
+      width: 48%;
+      color: #fff;
+      background: linear-gradient(90deg, #ff2222, #a00000);
+      transition: background 0.3s, transform 0.3s;
+    }
+    .btn-extra:hover {
+      background: linear-gradient(90deg, #ff4444, #b00000);
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Cuenta de Cobro</h1>
+
+  <!-- FORMULARIO DE DATOS -->
+  <form id="cuentaCobroForm">
+    <!-- Logo Opcional -->
+    <div class="section-title">Logo (Opcional)</div>
+    <div class="mb-3">
+      <label class="form-label">Cargar Logo:</label>
+      <input type="file" class="form-control" id="logoInput" accept="image/*" />
+    </div>
+
+    <!-- Bloque Superior (Número, Fecha) -->
+    <div class="section-title">Bloque Superior</div>
+    <div class="mb-3">
+      <label class="form-label">Número:</label>
+      <input type="text" class="form-control" id="numero" placeholder="Ej: COB-0001" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Fecha:</label>
+      <input type="date" class="form-control" id="fecha" />
+    </div>
+
+    <!-- Bloque Cliente (Cliente, Domicilio, Ciudad/Estado, Tel) -->
+    <div class="section-title">Datos del Cliente</div>
+    <div class="mb-3">
+      <label class="form-label">Cliente:</label>
+      <input
+        type="text"
+        class="form-control"
+        id="cliente"
+        placeholder="Nombre o Razón Social"
+      />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Domicilio:</label>
+      <input type="text" class="form-control" id="domicilio" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Ciudad o Estado:</label>
+      <input type="text" class="form-control" id="ciudadEstado" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Tel:</label>
+      <input type="text" class="form-control" id="tel" />
+    </div>
+
+    <!-- Detalle de la Tabla (Múltiples Ítems) -->
+    <div class="section-title">Detalle de Servicios</div>
+    <div id="itemsContainer">
+      <!-- Fila inicial -->
+      <div class="row item-row">
+        <div class="col-md-3 mb-2">
+          <label>Cantidad:</label>
+          <input type="text" class="form-control item-cantidad" placeholder="1" />
+        </div>
+        <div class="col-md-5 mb-2">
+          <label>Descripción:</label>
+          <input
+            type="text"
+            class="form-control item-descripcion"
+            placeholder="Ej: Servicio X"
+          />
+        </div>
+        <div class="col-md-2 mb-2">
+          <label>Valor Unitario:</label>
+          <input
+            type="text"
+            class="form-control item-valorUnitario"
+            placeholder="1000"
+          />
+        </div>
+        <div class="col-md-2 mb-2">
+          <label>Importe:</label>
+          <input
+            type="text"
+            class="form-control item-importe"
+            placeholder="1000"
+          />
+        </div>
+      </div>
+    </div>
+    <!-- Botón para añadir más filas -->
+    <button
+      type="button"
+      class="btn btn-secondary w-100"
+      onclick="agregarItem()"
+    >
+      Agregar Ítem
+    </button>
+
+    <!-- Resumen de Totales (Subtotal, Total) -->
+    <div class="row mt-3">
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Subtotal:</label>
+        <input type="text" class="form-control" id="subtotal" placeholder="1000" />
+      </div>
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Total:</label>
+        <input type="text" class="form-control" id="total" placeholder="1160" />
+      </div>
+    </div>
+
+    <!-- Pie de Página (Fijo) -->
+    <div class="section-title">Pie de Página</div>
+    <p class="mb-0">
+      Derechos Reservados a Grizzder Technology<br />
+      Contáctanos 3016872575 - 3222668924<br />
+      Encuéntranos en redes sociales como Grizzder Technology
+    </p>
+
+    <!-- Botón Generar PDF -->
+    <button
+      type="button"
+      class="btn btn-danger w-100"
+      onclick="generarPDF()"
+    >
+      Generar PDF
+    </button>
+  </form>
+
+  <!-- Botones Extra para Navegación -->
+  <div class="d-flex justify-content-between mt-4">
+    <button
+      type="button"
+      class="btn-extra"
+      onclick="window.location.href='index.html'"
+    >
+      Volver al Index
+    </button>
+    <button
+      type="button"
+      class="btn-extra"
+      onclick="window.location.href='informe_tecnico.html'"
+    >
+      Informe Técnico
+    </button>
+  </div>
+</div>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    window.jsPDF = window.jspdf.jsPDF;
+  });
+
+  // Agregar más filas de ítems
+  function agregarItem() {
+    const container = document.getElementById("itemsContainer");
+    const row = document.createElement("div");
+    row.classList.add("row", "item-row");
+    row.innerHTML = `
+      <div class="col-md-3 mb-2">
+        <label>Cantidad:</label>
+        <input type="text" class="form-control item-cantidad" placeholder="1" />
+      </div>
+      <div class="col-md-5 mb-2">
+        <label>Descripción:</label>
+        <input type="text" class="form-control item-descripcion" placeholder="Ej: Servicio X" />
+      </div>
+      <div class="col-md-2 mb-2">
+        <label>Valor Unitario:</label>
+        <input type="text" class="form-control item-valorUnitario" placeholder="1000" />
+      </div>
+      <div class="col-md-2 mb-2">
+        <label>Importe:</label>
+        <input type="text" class="form-control item-importe" placeholder="1000" />
+      </div>
+    `;
+    container.appendChild(row);
+  }
+
+  // Función para crear un logo circular con borde rojo (buena definición)
+  async function makeCircularLogo(dataUrl, size) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = function () {
+        // Canvas con más resolución para evitar pixelado
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        // Recorte circular
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        // Ajuste de la imagen al canvas
+        const iw = img.width, ih = img.height;
+        const aspect = iw / ih;
+        let drawWidth, drawHeight, offsetX, offsetY;
+        if (aspect > 1) {
+          drawHeight = size;
+          drawWidth = size * aspect;
+          offsetX = -(drawWidth - size) / 2;
+          offsetY = 0;
+        } else {
+          drawWidth = size;
+          drawHeight = size / aspect;
+          offsetX = 0;
+          offsetY = -(drawHeight - size) / 2;
+        }
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+        // Borde rojo
+        ctx.beginPath();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "rgb(200,0,0)";
+        ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+        ctx.stroke();
+
+        resolve(canvas.toDataURL("image/png"));
+      };
+    });
+  }
+
+  async function generarPDF() {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+    // Manejo del logo (si se sube)
+    const logoFile = document.getElementById("logoInput").files[0];
+    let circularLogo = null;
+    if (logoFile) {
+      const dataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(logoFile);
+      });
+      // Creamos el logo circular (150 px para evitar pixelado)
+      circularLogo = await makeCircularLogo(dataUrl, 150);
+    }
+
+    // Márgenes
+    const leftMargin = 10;
+    const rightMargin = 200;
+    let currentY = 60; // Espacio superior para dejar más distancia al encabezado
+    const bottomMargin = 270;
+
+    // Dibujar encabezado (logo + título)
+    function drawHeader() {
+      // Fondo negro
+      doc.setFillColor(0, 0, 0);
+      doc.rect(0, 0, 210, 40, "F");
+      // Logo circular (35×35 mm) en la esquina superior izquierda
+      if (circularLogo) {
+        doc.addImage(circularLogo, "PNG", 10, 5, 35, 35);
+      }
+      // Título centrado
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(255, 255, 255);
+      doc.text("CUENTA DE COBRO", 105, 25, { align: "center" });
+    }
+
+    // Pie de página
+    function drawFooter() {
+      const footerTop = 280;
+      doc.setFillColor(10, 10, 10);
+      doc.rect(0, footerTop, 210, 20, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(255, 255, 255);
+      doc.text("Derechos Reservados a Grizzder Technology", 105, footerTop + 5, {
+        align: "center",
+      });
+      doc.text("Contáctanos 3016872575 - 3222668924", 105, footerTop + 10, {
+        align: "center",
+      });
+      doc.text(
+        "Encuéntranos en redes sociales como Grizzder Technology",
+        105,
+        footerTop + 15,
+        { align: "center" }
+      );
+    }
+
+    // Función para ver si es necesario saltar de página
+    function checkPageBreak(addHeight) {
+      if (currentY + addHeight > bottomMargin) {
+        doc.addPage();
+        drawHeader();
+        currentY = 60;
+      }
+    }
+
+    // Función para dibujar un recuadro con borde rojo
+    const borderColor = [200, 0, 0];
+    doc.setDrawColor(...borderColor);
+
+    // Etiquetas en rojo, valores en negro
+    const labelColor = [200, 0, 0];
+    const valueColor = [0, 0, 0];
+
+    function addLabelValue(label, value, xLabel, xValue) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...labelColor);
+      doc.text(label, xLabel, currentY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...valueColor);
+      doc.text(value, xValue, currentY);
+    }
+
+    // Dibujamos la primera página
+    drawHeader();
+
+    // Bloque Superior (NÚMERO, FECHA)
+    let boxH1 = 20;
+    doc.rect(leftMargin, currentY, rightMargin - leftMargin, boxH1);
+    currentY += 6;
+    addLabelValue("NÚMERO:", document.getElementById("numero").value, leftMargin + 2, leftMargin + 35);
+    currentY += 6;
+    addLabelValue("FECHA:", document.getElementById("fecha").value, leftMargin + 2, leftMargin + 35);
+    currentY += (boxH1 - 12);
+
+    // Bloque Cliente
+    currentY += 5; // un poco más de espacio
+    let boxH2 = 35;
+    doc.rect(leftMargin, currentY, rightMargin - leftMargin, boxH2);
+    currentY += 6;
+    addLabelValue("CLIENTE:", document.getElementById("cliente").value, leftMargin + 2, leftMargin + 35);
+    currentY += 6;
+    addLabelValue("DOMICILIO:", document.getElementById("domicilio").value, leftMargin + 2, leftMargin + 35);
+    currentY += 6;
+    addLabelValue("CIUDAD/ESTADO:", document.getElementById("ciudadEstado").value, leftMargin + 2, leftMargin + 35);
+    currentY += 6;
+    addLabelValue("TEL:", document.getElementById("tel").value, leftMargin + 2, leftMargin + 35);
+    currentY += (boxH2 - 24);
+
+    // Espacio extra antes de la tabla
+    currentY += 10;
+
+    // Cabecera de la tabla
+    function drawTableHeader(yPos) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(50, 50, 50);
+      doc.rect(leftMargin, yPos, rightMargin - leftMargin, 8, "F");
+      doc.text("CANTIDAD", leftMargin + 2, yPos + 5);
+      doc.text("DESCRIPCIÓN", leftMargin + 40, yPos + 5);
+      doc.text("VALOR UNITARIO", leftMargin + 110, yPos + 5);
+      doc.text("IMPORTE", rightMargin - 10, yPos + 5, { align: "right" });
+    }
+
+    let tableTop = currentY;
+    drawTableHeader(tableTop);
+    currentY += 10; // Más espacio entre cabecera y primer ítem
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...valueColor);
+
+    function printItemRow(cant, desc, valUni, imp) {
+      // Dividimos la descripción para multilinea
+      let descLines = doc.splitTextToSize(desc, 60); // Ajusta ancho ~60 mm
+      let rowHeight = descLines.length * 5;
+      checkPageBreak(rowHeight + 5);
+
+      // Imprimimos CANT, VAL UNI, IMP en la misma línea
+      doc.text(cant, leftMargin + 2, currentY);
+      doc.text(valUni, leftMargin + 110, currentY);
+      doc.text(imp, rightMargin - 10, currentY, { align: "right" });
+
+      // Imprimimos la descripción multilinea
+      let descY = currentY;
+      descLines.forEach((line) => {
+        doc.text(line, leftMargin + 40, descY);
+        descY += 5;
+      });
+
+      // Actualizamos currentY al final
+      currentY = descY + 2;
+    }
+
+    // Dibujamos cada ítem
+    const rows = document.querySelectorAll(".item-row");
+    let tableBoxY = tableTop;
+    rows.forEach((row) => {
+      const cant = row.querySelector(".item-cantidad").value;
+      const desc = row.querySelector(".item-descripcion").value;
+      const valUni = row.querySelector(".item-valorUnitario").value;
+      const imp = row.querySelector(".item-importe").value;
+      printItemRow(cant, desc, valUni, imp);
+    });
+
+    // Marco de la tabla
+    let tableHeight = currentY - tableBoxY;
+    doc.rect(leftMargin, tableBoxY, rightMargin - leftMargin, tableHeight);
+
+    // Resumen (Subtotal, Total)
+    let summaryHeight = 15;
+    checkPageBreak(summaryHeight);
+    doc.rect(130, currentY, 70, summaryHeight);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...labelColor);
+
+    doc.text("SUBTOTAL:", 132, currentY + 5);
+    doc.text("TOTAL:", 132, currentY + 10);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...valueColor);
+    doc.text(document.getElementById("subtotal").value, 198, currentY + 5, {
+      align: "right",
+    });
+    doc.text(document.getElementById("total").value, 198, currentY + 10, {
+      align: "right",
+    });
+    currentY += (summaryHeight + 10);
+
+    // Pie de Página
+    drawFooter();
+
+    // Guardar PDF
+    doc.save(`CuentaDeCobro_${document.getElementById("cliente").value}.pdf`);
+  }
+</script>
+</body>
+</html>
